@@ -98,6 +98,9 @@ func (co XYPController) Get(c *gin.Context) {
 	// Print response
 	fmt.Println("SOAP Response:", string(body))
 
+	response.Success(c, 200, gin.H{
+		"data": string(body),
+	})
 }
 
 func (co XYPController) Create(c *gin.Context) {
