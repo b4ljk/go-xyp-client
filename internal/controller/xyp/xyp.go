@@ -2,6 +2,7 @@ package xyp
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -82,7 +83,13 @@ func (co XYPController) Get(c *gin.Context) {
 	req.Header.Set("signature", signed.Signature)
 
 	// Send request
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
