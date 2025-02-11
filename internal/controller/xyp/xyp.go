@@ -1,11 +1,7 @@
 package xyp
 
 import (
-	"bytes"
-	"crypto/tls"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -41,6 +37,24 @@ func (co XYPController) GetById(c *gin.Context) {
 	})
 }
 
+type RequestArgs struct {
+	Request struct {
+		Regnum string `json:"regnum"`
+		Auth   struct {
+			Citizen struct {
+				CivilID     string `json:"civilId"`
+				Regnum      string `json:"regnum"`
+				Fingerprint string `json:"fingerprint"`
+				AuthType    int    `json:"authType"`
+			} `json:"citizen"`
+			Operator struct {
+				Regnum      string `json:"regnum"`
+				Fingerprint string `json:"fingerprint"`
+			} `json:"operator"`
+		} `json:"auth"`
+	} `json:"request"`
+}
+
 func (co XYPController) Get(c *gin.Context) {
 
 	REGNUM := viper.GetString("REGNUM")
@@ -49,65 +63,30 @@ func (co XYPController) Get(c *gin.Context) {
 	// time as string
 	time := time.Now().Format("2006-01-02T15:04:05Z")
 
-	soapRequest := fmt.Sprintf(`<?xml version="1.0" encoding="utf-8"?>
-	<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cit="https://xyp.gov.mn/citizen">
-	    <soapenv:Header/>
-	    <soapenv:Body>
-	        <cit:WS100101_getCitizenIDCardInfo>
-	            <CitizenID>%s</CitizenID>
-	        </cit:WS100101_getCitizenIDCardInfo>
-	    </soapenv:Body>
-	</soapenv:Envelope>`, REGNUM)
-
 	xypSign := utils.XypSign{KeyPath: XYP_KEY}
+
 	signed, err := xypSign.Generate(XYP_TOKEN, time)
 	if err != nil {
 		fmt.Println("Error signing:", err)
 		return
 	}
 
-	// Define the SOAP endpoint
 	url := "https://xyp.gov.mn/citizen-1.5.0/ws?WSDL"
 
-	// Create HTTP request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(soapRequest)))
+	// client := utils.NewSOAPClient(url, httpClient)
+	client := utils.NewXypClient(url)
+	response, err := client.GetCitizenIDCardInfo(REGNUM, signed)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error: %v\n", err)
+		return
 	}
 
-	// Set headers
-	req.Header.Set("Content-Type", "text/xml;charset=UTF-8")
-	req.Header.Set("SOAPAction", "WS100101_getCitizenIDCardInfo")
-	req.Header.Set("accessToken", signed.AccessToken)
-	req.Header.Set("timeStamp", signed.Timestamp)
-	req.Header.Set("signature", signed.Signature)
-
-	// Send request
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	// Read response
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Print response
-	fmt.Println("SOAP Response:", string(body))
+	fmt.Println(response)
 
 	response.Success(c, 200, gin.H{
-		"data": string(body),
+		"data": response.Result,
 	})
+
 }
 
 func (co XYPController) Create(c *gin.Context) {
