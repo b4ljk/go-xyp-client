@@ -81,13 +81,11 @@ type GetPassportInfoRequestData struct {
 }
 
 type ServiceRequest struct {
-	XMLName xml.Name `xml:"http://citizen.xyp.gov.mn/ serviceRequest"`
 
 	Auth *AuthorizationData `xml:"auth,omitempty" json:"auth,omitempty"`
 }
 
 type AuthorizationData struct {
-	XMLName xml.Name `xml:"http://citizen.xyp.gov.mn/ authorizationData"`
 
 	Citizen *AuthorizationEntity `xml:"citizen,omitempty" json:"citizen,omitempty"`
 
@@ -95,7 +93,6 @@ type AuthorizationData struct {
 }
 
 type AuthorizationEntity struct {
-	XMLName xml.Name `xml:"http://citizen.xyp.gov.mn/ authorizationEntity"`
 
 	AppAuthToken string `xml:"appAuthToken,omitempty" json:"appAuthToken,omitempty"`
 
