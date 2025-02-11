@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/b4ljk/xyp-go/internal/controller/ndsh"
+	"github.com/b4ljk/xyp-go/internal/controller/xyp"
 	"github.com/b4ljk/xyp-go/internal/models"
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +31,6 @@ func Register(router *gin.RouterGroup) {
 		// },
 	}
 	router.GET("/", Alive)
-	ndsh.Register(router, bc)
+	xyp.Register(router, bc)
 
 }

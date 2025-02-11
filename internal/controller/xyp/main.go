@@ -1,4 +1,4 @@
-package ndsh
+package xyp
 
 import (
 	"github.com/b4ljk/xyp-go/internal/models"
@@ -10,6 +10,6 @@ func Register(router *gin.RouterGroup, bc models.Controller) {
 	// AuthController{Controller: bc}.Register(router.Group("auth"))
 
 	{
-		NdshController{Controller: bc}.Register(router.Group("ndsh"))
+		XYPController{Controller: bc}.Register(router.Group("xyp"))
 	}
 }
