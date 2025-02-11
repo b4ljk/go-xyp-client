@@ -67,7 +67,7 @@ func (co XYPController) Get(c *gin.Context) {
 	}
 
 	// Define the SOAP endpoint
-	url := "https://xyp.gov.mn/citizen-1.5.0/ws"
+	url := "https://xyp.gov.mn/citizen-1.5.0/ws?WSDL"
 
 	// Create HTTP request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(soapRequest)))
