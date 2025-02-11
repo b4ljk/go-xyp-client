@@ -48,34 +48,22 @@ func (co XYPController) Get(c *gin.Context) {
 	// time as string
 	time := time.Now().Format("2006-01-02T15:04:05Z")
 
-	soapRequest := `<?xml version="1.0" encoding="utf-8"?>
+	soapRequest := fmt.Sprintf(`<?xml version="1.0" encoding="utf-8"?>
 	<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cit="https://xyp.gov.mn/citizen">
 	    <soapenv:Header/>
 	    <soapenv:Body>
 	        <cit:WS100101_getCitizenIDCardInfo>
-	            <CitizenID>123456789</CitizenID>
+	            <CitizenID>%s</CitizenID>
 	        </cit:WS100101_getCitizenIDCardInfo>
 	    </soapenv:Body>
-	</soapenv:Envelope>`
+	</soapenv:Envelope>`, REGNUM)
 
 	xypSign := utils.XypSign{KeyPath: XYP_KEY}
-	toBeSigned, signature := xypSign.Sign(XYP_TOKEN, time)
-
-	// if err != nil {
-	// 	fmt.Println("Error signing:", err)
-	// 	return
-	// }
-
-	response.Success(c, 200, gin.H{
-		"message":     "success",
-		"soapRequest": soapRequest,
-		"REGNUM":      REGNUM,
-		"XYP_KEY":     XYP_KEY,
-		"XYP_TOKEN":   XYP_TOKEN,
-		"data":        toBeSigned,
-		"signature":   signature,
-	})
-	return
+	signed, err := xypSign.Generate(XYP_TOKEN, time)
+	if err != nil {
+		fmt.Println("Error signing:", err)
+		return
+	}
 
 	// Define the SOAP endpoint
 	url := "https://xyp.gov.mn/citizen-1.5.0/ws"
@@ -89,9 +77,9 @@ func (co XYPController) Get(c *gin.Context) {
 	// Set headers
 	req.Header.Set("Content-Type", "text/xml;charset=UTF-8")
 	req.Header.Set("SOAPAction", "WS100101_getCitizenIDCardInfo")
-	req.Header.Set("accessToken", "yourAccessToken")
-	req.Header.Set("timeStamp", "yourTimeStamp")
-	req.Header.Set("signature", "yourSignature")
+	req.Header.Set("accessToken", signed.AccessToken)
+	req.Header.Set("timeStamp", signed.Timestamp)
+	req.Header.Set("signature", signed.Signature)
 
 	// Send request
 	client := &http.Client{}

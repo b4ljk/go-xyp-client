@@ -2,51 +2,73 @@ package utils
 
 import (
 	"crypto"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"os"
+	"strings"
 )
 
-// XypSign is a struct that holds the path to the private key file.
 type XypSign struct {
 	KeyPath string
 }
 
-func (x *XypSign) __GetPrivKey() *rsa.PrivateKey {
-	keyData, _ := ioutil.ReadFile(x.KeyPath)
-	block, _ := pem.Decode(keyData)
-	privKey, _ := x509.ParsePKCS1PrivateKey(block.Bytes)
-	return privKey
+type SignatureData struct {
+	AccessToken string
+	Timestamp   string
+	Signature   string
 }
 
-func (x *XypSign) __toBeSigned(accessToken, timestamp string) map[string]string {
-	return map[string]string{
-		"accessToken": accessToken,
-		"timeStamp":   timestamp,
+func (x *XypSign) toBeSigned(accessToken, timestamp string) SignatureData {
+	return SignatureData{
+		AccessToken: accessToken,
+		Timestamp:   timestamp,
 	}
 }
 
-func (x *XypSign) __buildParam(toBeSigned map[string]string) string {
-	fmt.Println(toBeSigned["accessToken"] + "." + toBeSigned["timeStamp"])
-	return toBeSigned["accessToken"] + "." + toBeSigned["timeStamp"]
-}
+func (x *XypSign) Generate(accessToken, timestamp string) (SignatureData, error) {
+	// Read private key file
+	privateKeyBytes, err := os.ReadFile(x.KeyPath)
+	if err != nil {
+		return SignatureData{}, fmt.Errorf("failed to read private key: %w", err)
+	}
 
-func (x *XypSign) Sign(accessToken, timestamp string) (map[string]string, string) {
-	toBeSigned := x.__toBeSigned(accessToken, timestamp)
-	param := x.__buildParam(toBeSigned)
+	privateKeyString := string(privateKeyBytes)
+	privateKeyString = strings.ReplaceAll(privateKeyString, "\n", "")
+	privateKeyString = strings.ReplaceAll(privateKeyString, "-----BEGIN PRIVATE KEY-----", "")
+	privateKeyString = strings.ReplaceAll(privateKeyString, "-----END PRIVATE KEY-----", "")
 
-	hasher := sha256.New()
-	hasher.Write([]byte(param))
-	digest := hasher.Sum(nil)
+	decodedKey, err := base64.StdEncoding.DecodeString(privateKeyString)
+	if err != nil {
+		return SignatureData{}, fmt.Errorf("failed to decode private key: %w", err)
+	}
 
-	pkey := x.__GetPrivKey()
-	signer, _ := rsa.SignPKCS1v15(rand.Reader, pkey, crypto.SHA256, digest)
-	signature := base64.StdEncoding.EncodeToString(signer)
+	privateKey, err := x509.ParsePKCS8PrivateKey(decodedKey)
+	if err != nil {
+		return SignatureData{}, fmt.Errorf("failed to parse private key: %w", err)
+	}
 
-	return toBeSigned, signature
+	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return SignatureData{}, fmt.Errorf("private key is not RSA")
+	}
+
+	data := x.toBeSigned(accessToken, timestamp)
+	message := []byte(data.AccessToken + "." + data.Timestamp)
+
+	// Create hash
+	hash := sha256.Sum256(message)
+
+	// Sign the hash
+	signature, err := rsa.SignPKCS1v15(nil, rsaPrivateKey, crypto.SHA256, hash[:])
+	if err != nil {
+		return SignatureData{}, fmt.Errorf("failed to create signature: %w", err)
+	}
+
+	// Encode the signature
+	data.Signature = base64.StdEncoding.EncodeToString(signature)
+
+	return data, nil
 }
