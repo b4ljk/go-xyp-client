@@ -84,7 +84,7 @@ func (co XYPController) Get(c *gin.Context) {
 	fmt.Println(response)
 
 	response.Success(c, 200, gin.H{
-		"data": response.Result,
+		"data": err,
 	})
 
 }
