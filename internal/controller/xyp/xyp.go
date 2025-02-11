@@ -1,14 +1,16 @@
 package xyp
 
 import (
-	"fmt"
+	"crypto/tls"
 	"net/http"
 	"time"
 
 	"github.com/b4ljk/xyp-go/internal/models"
+	"github.com/b4ljk/xyp-go/myservice"
 	"github.com/b4ljk/xyp-go/pkg/response"
 	"github.com/b4ljk/xyp-go/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/hooklift/gowsdl/soap"
 	"github.com/spf13/viper"
 )
 
@@ -37,56 +39,69 @@ func (co XYPController) GetById(c *gin.Context) {
 	})
 }
 
-type RequestArgs struct {
-	Request struct {
-		Regnum string `json:"regnum"`
-		Auth   struct {
-			Citizen struct {
-				CivilID     string `json:"civilId"`
-				Regnum      string `json:"regnum"`
-				Fingerprint string `json:"fingerprint"`
-				AuthType    int    `json:"authType"`
-			} `json:"citizen"`
-			Operator struct {
-				Regnum      string `json:"regnum"`
-				Fingerprint string `json:"fingerprint"`
-			} `json:"operator"`
-		} `json:"auth"`
-	} `json:"request"`
-}
-
 func (co XYPController) Get(c *gin.Context) {
 
 	REGNUM := viper.GetString("REGNUM")
 	XYP_TOKEN := viper.GetString("XYP_TOKEN")
 	XYP_KEY := viper.GetString("XYP_KEY")
-	// time as string
-	time := time.Now().Format("2006-01-02T15:04:05Z")
+	time := time.Now().Format("2006-01-02T15:04:05")
 
-	xypSign := utils.XypSign{KeyPath: XYP_KEY}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
 
-	signed, err := xypSign.Generate(XYP_TOKEN, time)
+	signature := utils.XypSign{
+		KeyPath: XYP_KEY,
+	}
+
+	signedData, err := signature.Generate(XYP_TOKEN, time)
+
 	if err != nil {
-		fmt.Println("Error signing:", err)
+		response.Error(c, 500, err.Error())
 		return
 	}
 
-	url := "https://xyp.gov.mn/citizen-1.5.0/ws?WSDL"
+	newClient := soap.NewClient("https://xyp.gov.mn/citizen-1.5.0/ws?WSDL", soap.WithHTTPHeaders(map[string]string{
+		"accessToken": signedData.AccessToken,
+		"signature":   signedData.Signature,
+		"timeStamp":   signedData.Timestamp,
+	}), soap.WithHTTPClient(client))
 
-	// client := utils.NewSOAPClient(url, httpClient)
-	client := utils.NewXypClient(url)
-	response, err := client.GetCitizenIDCardInfo(REGNUM, signed)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
+	citizenService := myservice.NewCitizenService(newClient)
+
+	_test := &myservice.WS100101_getCitizenIDCardInfo{
+		Request: &myservice.CitizenRequestData{
+			Regnum:  REGNUM,
+			CivilId: "",
+			ServiceRequest: &myservice.ServiceRequest{
+				Auth: &myservice.AuthorizationData{
+					Citizen: &myservice.AuthorizationEntity{
+						CivilId:         "",
+						Regnum:          REGNUM,
+						AppAuthToken:    "",
+						AuthAppName:     "",
+						CertFingerprint: "",
+						Signature:       "",
+					},
+					Operator: nil,
+				},
+			},
+		},
 	}
 
-	fmt.Println(response)
+	_response, err := citizenService.WS100101_getCitizenIDCardInfo(_test)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
 
 	response.Success(c, 200, gin.H{
-		"data": err,
+		"data": _response,
 	})
-
 }
 
 func (co XYPController) Create(c *gin.Context) {
