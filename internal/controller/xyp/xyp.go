@@ -77,19 +77,19 @@ func (co XYPController) Get(c *gin.Context) {
 		Request: &myservice.CitizenRequestData{
 			Regnum:  REGNUM,
 			CivilId: "",
-			ServiceRequest: &myservice.ServiceRequest{
-				Auth: &myservice.AuthorizationData{
-					Citizen: &myservice.AuthorizationEntity{
-						CivilId:         "",
-						Regnum:          REGNUM,
-						AppAuthToken:    "",
-						AuthAppName:     "",
-						CertFingerprint: "",
-						Signature:       "",
-					},
-					Operator: nil,
-				},
-			},
+			// ServiceRequest: &myservice.ServiceRequest{
+			// 	Auth: &myservice.AuthorizationData{
+			// 		Citizen: &myservice.AuthorizationEntity{
+			// 			CivilId:         "",
+			// 			Regnum:          REGNUM,
+			// 			AppAuthToken:    "",
+			// 			AuthAppName:     "",
+			// 			CertFingerprint: "",
+			// 			Signature:       "",
+			// 		},
+			// 		Operator: nil,
+			// 	},
+			// },
 		},
 	}
 
