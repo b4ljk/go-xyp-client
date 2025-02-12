@@ -3222,7 +3222,8 @@ type OrphanInfoData struct {
 }
 
 type WS100101_getCitizenIDCardInfo struct {
-	Request *CitizenRequestData `xml:"request,omitempty" json:"request,omitempty"`
+	// Request *CitizenRequestData `xml:"request,omitempty" json:"request,omitempty"`
+	 Request *CitizenRequestData `xml:"citizenRequestData,omitempty" json:"request,omitempty"`
 }
 
 type WS100101_getCitizenIDCardInfoResponse struct {
