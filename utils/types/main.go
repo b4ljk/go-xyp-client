@@ -1,10 +1,6 @@
 package types
 
 type PassportDataType struct {
-	Envelope Envelope `xml:"Envelope"`
-}
-
-type Envelope struct {
 	Body      Body   `xml:"Body"`
 	XmlnsSoap string `xml:"_xmlns:soap"`
 	Prefix    string `xml:"__prefix"`

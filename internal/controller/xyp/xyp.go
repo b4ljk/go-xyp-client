@@ -101,6 +101,8 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 	var _type types.PassportDataType
+	fmt.Println("Raw XML body:", string(body))
+
 	err = xml.Unmarshal(body, &_type)
 
 	fmt.Println(_type)
@@ -111,10 +113,10 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(_type.Envelope.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response)
+	fmt.Println(_type.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response)
 
 	response.Success(c, 200, gin.H{
-		"data": _type.Envelope.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response,
+		"data": _type.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response,
 	})
 }
 
