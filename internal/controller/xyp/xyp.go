@@ -103,6 +103,8 @@ func (co XYPController) Get(c *gin.Context) {
 	var _type types.PassportDataType
 	err = xml.Unmarshal(body, &_type)
 
+	fmt.Println(_type)
+
 	if err != nil {
 		fmt.Println("Error on parse xml to json:", err)
 		response.Error(c, 500, err.Error())
