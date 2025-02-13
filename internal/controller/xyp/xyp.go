@@ -46,7 +46,7 @@ func (co XYPController) Get(c *gin.Context) {
 	REGNUM := viper.GetString("REGNUM")
 	XYP_TOKEN := viper.GetString("XYP_TOKEN")
 	XYP_KEY := viper.GetString("XYP_KEY")
-	time := time.Now().Format("2006-01-02T15:04:05")
+	time := fmt.Sprintf("%d", time.Now().Unix())
 
 	soapBody := fmt.Sprintf(constants.XYP_PASSPORT_SOAP_BODY, REGNUM, REGNUM)
 
