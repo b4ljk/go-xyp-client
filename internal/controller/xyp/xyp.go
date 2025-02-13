@@ -3,6 +3,7 @@ package xyp
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +19,12 @@ import (
 
 type XYPController struct {
 	models.Controller
+}
+
+type AnotherResponse struct {
+	XMLName xml.Name `xml:"another_response"`
+	Code    int      `xml:"code"`
+	Details string   `xml:"details"`
 }
 
 type XYPCreateInput struct {
@@ -99,10 +106,11 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
-	_response := string(body)
+	var another AnotherResponse
+	jsonData, err := utils.XMLToJSON(body, &another)
 
 	response.Success(c, 200, gin.H{
-		"data": _response,
+		"data": jsonData,
 	})
 }
 
