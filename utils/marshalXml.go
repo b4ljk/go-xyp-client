@@ -19,5 +19,11 @@ func XMLToJSON[T any](xmlData []byte, v *T) ([]byte, error) {
 		return nil, err
 	}
 
-	return json.MarshalIndent(v, "", "  ")
+	jsonData, err := json.Marshal(v)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonData, nil
 }

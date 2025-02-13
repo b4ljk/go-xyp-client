@@ -99,7 +99,6 @@ func (co XYPController) Get(c *gin.Context) {
 		response.Error(c, 500, err.Error())
 		return
 	}
-	fmt.Println(string(body))
 	var _type types.PassportDataType
 	base64Data, err := utils.XMLToJSON(body, &_type)
 
