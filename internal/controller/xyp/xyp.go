@@ -99,15 +99,20 @@ func (co XYPController) Get(c *gin.Context) {
 		response.Error(c, 500, err.Error())
 		return
 	}
-
-	// print string
 	fmt.Println(string(body))
-
 	var _type types.PassportDataType
-	jsonData, err := utils.XMLToJSON(body, &_type)
+	base64Data, err := utils.XMLToJSON(body, &_type)
 
 	if err != nil {
 		fmt.Println("Error on parse xml to json:", err)
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	jsonData, err := utils.Base64Decode(string(base64Data))
+
+	if err != nil {
+		fmt.Println("Error on base64 decode:", err)
 		response.Error(c, 500, err.Error())
 		return
 	}
