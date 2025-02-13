@@ -47,29 +47,27 @@ type Citizen struct {
 }
 
 type Response struct {
-	AddressDetail      string `xml:"addressDetail"`
-	AddressStreetName  string `xml:"addressStreetName"`
-	AimagCityCode      string `xml:"aimagCityCode"`
-	AimagCityName      string `xml:"aimagCityName"`
-	BagKhorooCode      string `xml:"bagKhorooCode"`
-	BagKhorooName      string `xml:"bagKhorooName"`
-	BirthDateAsText    string `xml:"birthDateAsText"`
-	BirthPlace         string `xml:"birthPlace"`
-	CivilID            string `xml:"civilId"`
-	Firstname          string `xml:"firstname"`
-	Gender             string `xml:"gender"`
-	Lastname           string `xml:"lastname"`
-	Nationality        string `xml:"nationality"`
-	PassTime           string `xml:"passTime"`
-	PassportAddress    string `xml:"passportAddress"`
-	PassportExpireDate string `xml:"passportExpireDate"`
-	PassportIssueDate  string `xml:"passportIssueDate"`
-	PassportNum        string `xml:"passportNum"`
-	Regnum             string `xml:"regnum"`
-	SoumDistrictCode   string `xml:"soumDistrictCode"`
-	SoumDistrictName   string `xml:"soumDistrictName"`
-	Surname            string `xml:"surname"`
-	XmlnsXsi           string `xml:"_xmlns:xsi"`
-	XsiType            string `xml:"_xsi:type"`
-	Image              string `xml:"image"`
+	AddressDetail      string `xml:"addressDetail" json:"addressDetail"`
+	AddressStreetName  string `xml:"addressStreetName" json:"addressStreetName"`
+	AimagCityCode      string `xml:"aimagCityCode" json:"aimagCityCode"`
+	AimagCityName      string `xml:"aimagCityName" json:"aimagCityName"`
+	BagKhorooCode      string `xml:"bagKhorooCode" json:"bagKhorooCode"`
+	BagKhorooName      string `xml:"bagKhorooName" json:"bagKhorooName"`
+	BirthDateAsText    string `xml:"birthDateAsText" json:"birthDateAsText"`
+	BirthPlace         string `xml:"birthPlace" json:"birthPlace"`
+	CivilID            string `xml:"civilId" json:"civilId"`
+	Firstname          string `xml:"firstname" json:"firstname"`
+	Gender             string `xml:"gender" json:"gender"`
+	Lastname           string `xml:"lastname" json:"lastname"`
+	Nationality        string `xml:"nationality" json:"nationality"`
+	PassTime           string `xml:"passTime" json:"passTime"`
+	PassportAddress    string `xml:"passportAddress" json:"passportAddress"`
+	PassportExpireDate string `xml:"passportExpireDate" json:"passportExpireDate"`
+	PassportIssueDate  string `xml:"passportIssueDate" json:"passportIssueDate"`
+	PassportNum        string `xml:"passportNum" json:"passportNum"`
+	Regnum             string `xml:"regnum" json:"regnum"`
+	SoumDistrictCode   string `xml:"soumDistrictCode" json:"soumDistrictCode"`
+	SoumDistrictName   string `xml:"soumDistrictName" json:"soumDistrictName"`
+	Surname            string `xml:"surname" json:"surname"`
+	Image              string `xml:"image" json:"image"`
 }
