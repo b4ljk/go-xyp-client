@@ -3,6 +3,7 @@ package xyp
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -100,7 +101,7 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 	var _type types.PassportDataType
-	base64Data, err := utils.XMLToJSON(body, &_type)
+	err = xml.Unmarshal(body, &_type)
 
 	if err != nil {
 		fmt.Println("Error on parse xml to json:", err)
@@ -108,18 +109,8 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("Base64 data:", string(base64Data))
-
-	jsonData, err := utils.Base64Decode(string(base64Data))
-
-	if err != nil {
-		fmt.Println("Error on base64 decode:", err)
-		response.Error(c, 500, err.Error())
-		return
-	}
-
 	response.Success(c, 200, gin.H{
-		"data": jsonData,
+		"data": _type.Envelope.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response,
 	})
 }
 

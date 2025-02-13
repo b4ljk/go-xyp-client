@@ -27,3 +27,7 @@ func XMLToJSON[T any](xmlData []byte, v *T) ([]byte, error) {
 
 	return jsonData, nil
 }
+
+func XMLtoGoStruct(xmlData []byte, v interface{}) error {
+	return xml.Unmarshal(xmlData, v)
+}
