@@ -109,6 +109,8 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
+	fmt.Println(_type.Envelope.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response)
+
 	response.Success(c, 200, gin.H{
 		"data": _type.Envelope.Body.WS100101GetCitizenIDCardInfoResponse.Return.Response,
 	})
