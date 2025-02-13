@@ -1,16 +1,18 @@
 package xyp
 
 import (
+	"bytes"
 	"crypto/tls"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 
 	"github.com/b4ljk/xyp-go/internal/models"
-	"github.com/b4ljk/xyp-go/myservice"
 	"github.com/b4ljk/xyp-go/pkg/response"
 	"github.com/b4ljk/xyp-go/utils"
+	"github.com/b4ljk/xyp-go/utils/constants"
 	"github.com/gin-gonic/gin"
-	"github.com/hooklift/gowsdl/soap"
 	"github.com/spf13/viper"
 )
 
@@ -46,6 +48,8 @@ func (co XYPController) Get(c *gin.Context) {
 	XYP_KEY := viper.GetString("XYP_KEY")
 	time := time.Now().Format("2006-01-02T15:04:05")
 
+	soapBody := fmt.Sprintf(constants.XYP_PASSPORT_SOAP_BODY, REGNUM, REGNUM)
+
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -65,39 +69,37 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
-	newClient := soap.NewClient("https://xyp.gov.mn/citizen-1.5.0/ws?WSDL", soap.WithHTTPHeaders(map[string]string{
-		"accessToken": signedData.AccessToken,
-		"signature":   signedData.Signature,
-		"timeStamp":   signedData.Timestamp,
-	}), soap.WithHTTPClient(client))
-
-	citizenService := myservice.NewCitizenService(newClient)
-
-	_test := &myservice.WS100101_getCitizenIDCardInfo{
-		Request: &myservice.CitizenRequestData{
-			Regnum:  REGNUM,
-			CivilId: "",
-			// ServiceRequest: &myservice.ServiceRequest{
-			// 	Auth: &myservice.AuthorizationData{
-			// 		Citizen: &myservice.AuthorizationEntity{
-			// 			CivilId:         "",
-			// 			Regnum:          REGNUM,
-			// 			AppAuthToken:    "",
-			// 			AuthAppName:     "",
-			// 			CertFingerprint: "",
-			// 			Signature:       "",
-			// 		},
-			// 		Operator: nil,
-			// 	},
-			// },
-		},
-	}
-
-	_response, err := citizenService.WS100101_getCitizenIDCardInfo(_test)
+	req, err := http.NewRequest("POST", constants.XYP_PASSPORT_URL, bytes.NewBuffer([]byte(soapBody)))
 	if err != nil {
+		fmt.Println("Error creating request:", err)
 		response.Error(c, 500, err.Error())
 		return
 	}
+
+	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
+	req.Header.Set("accessToken", signedData.AccessToken)
+	req.Header.Set("timeStamp", signedData.Timestamp)
+	req.Header.Set("signature", signedData.Signature)
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println("Error on request:", err)
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		fmt.Println("Error on read response body:", err)
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	_response := string(body)
 
 	response.Success(c, 200, gin.H{
 		"data": _response,
