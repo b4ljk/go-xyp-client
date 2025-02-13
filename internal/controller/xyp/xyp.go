@@ -3,7 +3,6 @@ package xyp
 import (
 	"bytes"
 	"crypto/tls"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,18 +12,13 @@ import (
 	"github.com/b4ljk/xyp-go/pkg/response"
 	"github.com/b4ljk/xyp-go/utils"
 	"github.com/b4ljk/xyp-go/utils/constants"
+	"github.com/b4ljk/xyp-go/utils/types"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
 type XYPController struct {
 	models.Controller
-}
-
-type AnotherResponse struct {
-	XMLName xml.Name `xml:"another_response"`
-	Code    int      `xml:"code"`
-	Details string   `xml:"details"`
 }
 
 type XYPCreateInput struct {
@@ -109,8 +103,8 @@ func (co XYPController) Get(c *gin.Context) {
 	// print string
 	fmt.Println(string(body))
 
-	var another AnotherResponse
-	jsonData, err := utils.XMLToJSON(body, &another)
+	var _type types.PassportDataType
+	jsonData, err := utils.XMLToJSON(body, &_type)
 
 	if err != nil {
 		fmt.Println("Error on parse xml to json:", err)
