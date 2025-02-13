@@ -106,8 +106,17 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
+	// print string
+	fmt.Println(string(body))
+
 	var another AnotherResponse
 	jsonData, err := utils.XMLToJSON(body, &another)
+
+	if err != nil {
+		fmt.Println("Error on parse xml to json:", err)
+		response.Error(c, 500, err.Error())
+		return
+	}
 
 	response.Success(c, 200, gin.H{
 		"data": jsonData,
