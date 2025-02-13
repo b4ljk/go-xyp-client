@@ -108,6 +108,8 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("Base64 data:", string(base64Data))
+
 	jsonData, err := utils.Base64Decode(string(base64Data))
 
 	if err != nil {
