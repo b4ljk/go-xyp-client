@@ -108,16 +108,16 @@ func (co XYPController) Get(c *gin.Context) {
 		return
 	}
 
-	// jsonData, err := utils.Base64Decode(string(base64Data))
+	jsonData, err := utils.Base64Decode(string(base64Data))
 
-	// if err != nil {
-	// 	fmt.Println("Error on base64 decode:", err)
-	// 	response.Error(c, 500, err.Error())
-	// 	return
-	// }
+	if err != nil {
+		fmt.Println("Error on base64 decode:", err)
+		response.Error(c, 500, err.Error())
+		return
+	}
 
 	response.Success(c, 200, gin.H{
-		"data": base64Data,
+		"data": jsonData,
 	})
 }
 
